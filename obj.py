@@ -8,10 +8,11 @@ class sprite:
         self.speed = [0, 0]
         self.pos = [0, 0]
 
-    def blit(self, screen):
+    def blit(self, screen: pygame.Surface):
         screen.blit(self.image, self.rect)
+        screen.fill((255, 0, 0, 100), self.rect)
 
-    def move(self, input: list[dict], dt: float):
+    def move(self, input: list[dict], dt: float, screen):
         keyup = [x for x in input if x["type"] == pygame.KEYUP]
         keydown = [x for x in input if x["type"] == pygame.KEYDOWN]
         for event in keydown:
@@ -45,6 +46,7 @@ class sprite:
         w = size
         h = self.image.get_height() * (size / self.image.get_width())
         self.image = pygame.transform.scale(self.image, (w,h))
+        self.rect = self.image.get_rect()
 
     def scaleY(self, size: float):
         h = size
@@ -52,8 +54,10 @@ class sprite:
         self.image = pygame.transform.scale(self.image, (w,h))
 
 class Map:
-    def __init__(self, path: str):
+    def __init__(self, path: str, col: str, screen):
         self.image = pygame.image.load(path)
+        self.colImg = pygame.image.load(col)
+        self.collider = pygame.Surface((screen.get_width(), screen.get_height()))
         self.rect = self.image.get_rect()
 
     def center(self, screen):
@@ -66,3 +70,7 @@ class Map:
 
     def blit(self, screen):
         screen.blit(self.image, self.rect)
+
+    def colCheck(self, player: pygame.Rect):
+        self.collider.blit(self.colImg, self.rect)
+        print(f"l: {self.collider.get_at((player.x, player.y+player.height))[:1]}, r: {self.collider.get_at((player.x+player.width, player.y+player.height))[:1]}")
