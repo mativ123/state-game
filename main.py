@@ -1,33 +1,27 @@
 import sys
 import pygame
-from statemachine import StateMachine, state
-from funk import aspect_scale, andInp
+import statemachine
+import re
+from obj import sprite
+
+walkSpeed = 0.4
 
 pygame.init()
-screen = pygame.display.set_mode((500, 500))
+screen = pygame.display.set_mode((700, 700))
 
-duck = pygame.image.load("sprites/and.png")
-# duck = pygame.transform.scale(duck, (duck.get_width() / 2, duck.get_height() / 2))
-duck = aspect_scale(duck, [50, 0])
-duckrect = duck.get_rect();
+duck = sprite("sprites/and.png", walkSpeed)
 
-speed = [0, 0]
-walkSpeed = 700
-
-t = 0
-prev_t = 0
+clock = pygame.time.Clock()
 
 while True:
-    prev_t = t
-    t = pygame.time.get_ticks()
-    dt = (t - prev_t) / 1000
+    dt = clock.tick(60)
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            sys.exit()
-        speed = andInp(event, walkSpeed)
-    duckrect = duckrect.move(speed[0] * dt, speed[1] * dt)
+    event = pygame.event.get()
+    dinmor = [{"type": x.type, "key": x.dict["key"]} for x in event if "key" in x.dict]
+    [sys.exit() for x in event if x.type == pygame.QUIT]
+
+    duck.move(dinmor, dt)
 
     screen.fill((255, 0, 0))
-    screen.blit(duck, duckrect)
+    duck.blit(screen)
     pygame.display.flip()
