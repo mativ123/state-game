@@ -2,7 +2,7 @@ import sys
 import pygame
 import statemachine
 import re
-from obj import sprite
+from obj import sprite, Map
 
 walkSpeed = 0.4
 
@@ -10,6 +10,11 @@ pygame.init()
 screen = pygame.display.set_mode((700, 700))
 
 duck = sprite("sprites/and.png", walkSpeed)
+duck.scaleX(100)
+duck.center(screen)
+
+first_map = Map("sprites/map 1.png")
+first_map.center(screen)
 
 clock = pygame.time.Clock()
 
@@ -21,7 +26,9 @@ while True:
     [sys.exit() for x in event if x.type == pygame.QUIT]
 
     duck.move(dinmor, dt)
+    first_map.move(duck.pos[0], duck.pos[1], screen)
 
-    screen.fill((255, 0, 0))
+    screen.fill((0, 0, 0))
+    first_map.blit(screen)
     duck.blit(screen)
     pygame.display.flip()
