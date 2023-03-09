@@ -1,4 +1,5 @@
 import pygame
+import numpy as np
 
 class sprite:
     def __init__(self, path: str, walkSpeed: float):
@@ -35,8 +36,8 @@ class sprite:
             if event["key"] == pygame.K_UP:
                 self.speed[1] = 0
 
-        self.pos[0] += self.speed[0] * dt
-        self.pos[1] += self.speed[1] * dt
+        self.pos[0] -= self.speed[0] * dt
+        self.pos[1] -= self.speed[1] * dt
 
     def center(self, screen):
         self.rect.x = -(self.rect.w / 2 - screen.get_width() / 2)
@@ -52,6 +53,10 @@ class sprite:
         h = size
         w = self.image.get_width() * (size / self.image.get_height())
         self.image = pygame.transform.scale(self.image, (w,h))
+
+    def adjust(self, dist: int):
+        if dist < 0:
+            self.pos[0] += dist
 
 class Map:
     def __init__(self, path: str, col: str, screen):
@@ -69,8 +74,15 @@ class Map:
         self.rect.y = y - (self.rect.h / 2 - screen.get_height() / 2)
 
     def blit(self, screen):
-        screen.blit(self.image, self.rect)
+        screen.blit(self.colImg, self.rect)
 
-    def colCheck(self, player: pygame.Rect):
+    def colCheck(self, player: pygame.Rect, screen: pygame.Surface):
         self.collider.blit(self.colImg, self.rect)
-        print(f"l: {self.collider.get_at((player.x, player.y+player.height))[:1]}, r: {self.collider.get_at((player.x+player.width, player.y+player.height))[:1]}")
+        if np.mean(self.collider.get_at((player.x, player.y))[:3]) < 10:
+            print("collision")
+       #  x = player.x + round(player.width / 2)
+       #  y = player.y
+       #  while np.mean(self.collider.get_at((x, y))[:3]) > 10 and x > 0:
+       #      x -= 1
+       #  return player.x - x
+        return 1
