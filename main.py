@@ -27,7 +27,7 @@ while True:
 
     duck.move(dinmor, dt, screen)
     first_map.move(duck.pos[0], duck.pos[1], screen)
-    duck.adjust(first_map.colCheck(duck.rect, screen))
+    duck.adjust(first_map.colCheck(duck, screen))
 
     screen.fill((0, 0, 0))
     first_map.blit(screen)
