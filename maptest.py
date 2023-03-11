@@ -13,18 +13,23 @@ class linje:
     def drawLerp(self, pos: tuple[int, int], screen: pygame.Surface, centerx: int):
         color = (0, 0, 0)
         inter = self.__intersect(pos)
+        dif = 0
         
         if not (centerx > pos[0] and centerx > inter[0]) and not (centerx < pos[0] and centerx < inter[0]):
             return 0
-        elif not (centerx > pos[0] and pos[0] < inter[0]):
+        elif pos[0] > centerx and pos[0] > inter[0]:
             color = (255, 0, 0)
-        elif not (centerx < pos[0] and pos[0] > inter[0]):
+            dif = inter[0] - pos[0]
+        elif pos[0] < centerx and pos[0] < inter[0]:
             color = (255, 0, 0)
+            dif = inter[0] - pos[0]
         else:
             color = (0, 255, 0)
 
         if pos[1] > self.A[1] and pos[1] < self.B[1]:
             pygame.draw.line(screen, color, pos, inter, width=3)
+
+        return dif
 
     "private"
     def __intersect(self, pos: tuple[int, int]):
@@ -108,8 +113,12 @@ while True:
     corners = [player.topleft, player.bottomleft, player.bottomright, player.topright]
 
     for corner in corners:
-        dinfar.drawLerp(corner, screen, player.centerx)
-        dinmor.drawLerp(corner, screen, player.centerx)
+        dimbo = dinfar.drawLerp(corner, screen, player.centerx)
+        diblo = dinmor.drawLerp(corner, screen, player.centerx)
+        if dimbo:
+            player = player.move(dimbo, 0)
+        if diblo:
+            player = player.move(diblo, 0)
 
     pygame.display.flip()
 
