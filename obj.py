@@ -55,9 +55,9 @@ class sprite:
         self.image = pygame.transform.scale(self.image, (w,h))
 
     def adjust(self, dist: list[int]):
-        print(dist[1] - self.pos[0] - self.rect.width)
+        # print(dist[1] - self.pos[0] - self.rect.width)
         self.pos[0] += dist[0] - self.pos[0]
-        # self.pos[0] += dist[1] - self.pos[0] - self.rect.width
+        self.pos[0] -= dist[1] - self.pos[0]
 
 class Map:
     def __init__(self, path: str, col: str, screen):
@@ -82,7 +82,7 @@ class Map:
         self.collider.blit(self.colImg, self.rect)
         checkPos = [
             {"x": player.rect.x, "y": player.rect.y, "pos": player.pos[0]},
-            {"x": player.rect.x + player.rect.width, "y": player.rect.y, "pos": player.pos[0] + player.rect.width},
+            {"x": player.rect.x + player.rect.width, "y": player.rect.y, "pos": player.pos[0] - player.rect.width},
         ]
         for index, pos in enumerate(checkPos):
             if self.__checkAt(pos["x"], pos["y"]):
