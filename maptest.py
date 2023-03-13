@@ -10,34 +10,41 @@ class linje:
     def draw(self, screen: pygame.Surface):
         pygame.draw.line(screen, (255, 0, 0), self.A, self.B, width=3)
 
-    def drawLerp(self, pos: tuple[int, int], screen: pygame.Surface, centerx: int):
-        color = (0, 0, 0)
-        inter = self.__intersect(pos)
-        dif = 0
-        
-        if not (centerx > pos[0] and centerx > inter[0]) and not (centerx < pos[0] and centerx < inter[0]):
-            return 0
-        elif pos[0] > centerx and pos[0] > inter[0]:
-            color = (255, 0, 0)
-            dif = inter[0] - pos[0]
-        elif pos[0] < centerx and pos[0] < inter[0]:
-            color = (255, 0, 0)
-            dif = inter[0] - pos[0]
-        else:
-            color = (0, 255, 0)
-
+    def drawLerp(self, pos: tuple[int, int], screen: pygame.Surface, center: tuple[int, int]):
+        dif = [0, 0]
         if pos[1] > self.A[1] and pos[1] < self.B[1]:
-            pygame.draw.line(screen, color, pos, inter, width=3)
+            dif[0] = self.__col(pos, screen, center[0], 0)
+        elif pos[0] > self.A[0] and pos[0] < self.B[0]:
+            dif[1] = self.__col(pos, screen, center[1], 1)
 
         return dif
 
     "private"
-    def __intersect(self, pos: tuple[int, int]):
-        t = (pos[1] - self.A[1]) / (self.B[1] - self.A[1])
+    def __intersect(self, pos: tuple[int, int], xy: int):
+        t = (pos[xy] - self.A[xy]) / (self.B[xy] - self.A[xy])
         x = self.A[0] + (self.B[0] - self.A[0]) * t
         y = self.A[1] + (self.B[1] - self.A[1]) * t
 
         return [x, y]
+
+    def __col(self, pos: tuple[int, int], screen: pygame.Surface, center: int, xy: int):
+        color = (0, 0, 0)
+        inter = self.__intersect(pos, 1 if xy == 0 else 0)
+        dif = 0
+        if not (center > pos[xy] and center > inter[xy]) and not (center < pos[xy] and center < inter[xy]):
+            return 0
+        elif pos[xy] > center and pos[xy] > inter[xy]:
+            color = (255, 0, 0)
+            dif = inter[xy] - pos[xy]
+        elif pos[xy] < center and pos[xy] < inter[xy]:
+            color = (255, 0, 0)
+            dif = inter[xy] - pos[xy]
+        else:
+            color = (0, 255, 0)
+
+        pygame.draw.line(screen, color, pos, inter, width=3)
+
+        return dif
 
 class Event:
     def __init__(self):
@@ -67,8 +74,10 @@ pygame.init()
 
 screen = pygame.display.set_mode((1000, 1000))
 
-dinfar = linje((333, 10), (333, 990))
-dinmor = linje((666, 10), (666, 990))
+dinfar = linje((333, 0), (333, 1000))
+dinmor = linje((666, 0), (666, 1000))
+dinbror = linje((0, 333), (1000, 333))
+spasmager = linje((0, 666), (1000, 666))
 
 player = pygame.Rect(450, 450, 100, 100)
 speed = [0, 0]
@@ -108,17 +117,33 @@ while True:
 
     dinfar.draw(screen)
     dinmor.draw(screen)
+    dinbror.draw(screen)
+    spasmager.draw(screen)
     screen.fill((79, 227 ,153), player)
 
     corners = [player.topleft, player.bottomleft, player.bottomright, player.topright]
 
     for corner in corners:
-        dimbo = dinfar.drawLerp(corner, screen, player.centerx)
-        diblo = dinmor.drawLerp(corner, screen, player.centerx)
-        if dimbo:
-            player = player.move(dimbo, 0)
-        if diblo:
-            player = player.move(diblo, 0)
+        dimbo = dinfar.drawLerp(corner, screen, player.center)
+        diblo = dinmor.drawLerp(corner, screen, player.center)
+        broder = dinbror.drawLerp(corner, screen, player.center)
+        bozo = spasmager.drawLerp(corner, screen, player.center)
+        player = player.move(dimbo[0], dimbo[1])
+        player = player.move(diblo[0], diblo[1])
+        player = player.move(broder[0], broder[1])
+        player = player.move(bozo[0], bozo[1])
+        if dimbo[0]:
+            speed[0] = 0
+            break
+        if diblo[0]:
+            speed[0] = 0
+            break
+        if broder[1]:
+            speed[1] = 0
+            break
+        if bozo[1]:
+            speed[1] = 0
+            break
 
     pygame.display.flip()
 
