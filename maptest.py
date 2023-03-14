@@ -74,10 +74,10 @@ pygame.init()
 
 screen = pygame.display.set_mode((1000, 1000))
 
-dinfar = linje((333, 0), (333, 1000))
-dinmor = linje((666, 0), (666, 1000))
-dinbror = linje((0, 333), (1000, 333))
-spasmager = linje((0, 666), (1000, 666))
+rlinje = linje((333, 0), (333, 1000))
+llinje = linje((666, 0), (666, 1000))
+tlinje = linje((0, 333), (1000, 333))
+blinje = linje((0, 666), (1000, 666))
 
 player = pygame.Rect(450, 450, 100, 100)
 speed = [0, 0]
@@ -115,35 +115,37 @@ while True:
     player = player.move(speed[0] * dt, speed[1] * dt)
     screen.fill((177, 240, 115))
 
-    dinfar.draw(screen)
-    dinmor.draw(screen)
-    dinbror.draw(screen)
-    spasmager.draw(screen)
+    rlinje.draw(screen)
+    llinje.draw(screen)
+    tlinje.draw(screen)
+    blinje.draw(screen)
     screen.fill((79, 227 ,153), player)
 
-    corners = [player.topleft, player.bottomleft, player.bottomright, player.topright]
+    corners = [player.topleft, player.bottomleft, player.bottomright, player.topright, (player.left, player.centery), (player.right, player.centery), (player.centerx, player.top), (player.centerx, player.bottom)]
 
     for corner in corners:
-        dimbo = dinfar.drawLerp(corner, screen, player.center)
-        diblo = dinmor.drawLerp(corner, screen, player.center)
-        broder = dinbror.drawLerp(corner, screen, player.center)
-        bozo = spasmager.drawLerp(corner, screen, player.center)
-        player = player.move(dimbo[0], dimbo[1])
-        player = player.move(diblo[0], diblo[1])
-        player = player.move(broder[0], broder[1])
-        player = player.move(bozo[0], bozo[1])
-        if dimbo[0]:
+        rdif = rlinje.drawLerp(corner, screen, player.center)
+        ldif = llinje.drawLerp(corner, screen, player.center)
+        tdif = tlinje.drawLerp(corner, screen, player.center)
+        bdif = blinje.drawLerp(corner, screen, player.center)
+        player = player.move(rdif[0], rdif[1])
+        player = player.move(ldif[0], ldif[1])
+        player = player.move(tdif[0], tdif[1])
+        player = player.move(bdif[0], bdif[1])
+        if rdif[0]:
             speed[0] = 0
             break
-        if diblo[0]:
+        if ldif[0]:
             speed[0] = 0
             break
-        if broder[1]:
+        if tdif[1]:
             speed[1] = 0
             break
-        if bozo[1]:
+        if bdif[1]:
             speed[1] = 0
             break
+
+    print(clock.get_fps())
 
     pygame.display.flip()
 

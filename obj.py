@@ -1,104 +1,109 @@
 import pygame
-import numpy as np
 
-class sprite:
-    def __init__(self, path: str, walkSpeed: float):
-        self.image = pygame.image.load(path)
-        self.rect = self.image.get_rect()
-        self.walkSpeed = walkSpeed
-        self.speed = [0, 0]
-        self.pos = [0, 0]
+class Event:
+    def __init__(self):
+        self.events = pygame.event.get()
 
-    def blit(self, screen: pygame.Surface):
-        screen.blit(self.image, self.rect)
-        screen.fill((255, 0, 0, 100), self.rect)
+    "public"
+    def quit(self):
+        if True in [True for x in self.events if x.type == pygame.QUIT]:
+            return True
 
-    def move(self, input: list[dict], dt: float, screen):
-        keyup = [x for x in input if x["type"] == pygame.KEYUP]
-        keydown = [x for x in input if x["type"] == pygame.KEYDOWN]
-        for event in keydown:
-            if event["key"] == pygame.K_LEFT:
-                self.speed[0] = -self.walkSpeed
-            if event["key"] == pygame.K_RIGHT:
-                self.speed[0] = self.walkSpeed
-            if event["key"] == pygame.K_DOWN:
-                self.speed[1] = self.walkSpeed
-            if event["key"] == pygame.K_UP:
-                self.speed[1] = -self.walkSpeed
-        
-        for event in keyup:
-            if event["key"] == pygame.K_LEFT:
-                self.speed[0] = 0
-            if event["key"] == pygame.K_RIGHT:
-                self.speed[0] = 0
-            if event["key"] == pygame.K_DOWN:
-                self.speed[1] = 0
-            if event["key"] == pygame.K_UP:
-                self.speed[1] = 0
+    def checkInput(self, action: int, key: int):
+        eventDict = self.__getDict()
 
-        self.pos[0] -= self.speed[0] * dt
-        self.pos[1] -= self.speed[1] * dt
-
-    def center(self, screen):
-        self.rect.x = -(self.rect.w / 2 - screen.get_width() / 2)
-        self.rect.y = -(self.rect.h / 2 - screen.get_height() / 2)
-
-    def scaleX(self, size: float):
-        w = size
-        h = self.image.get_height() * (size / self.image.get_width())
-        self.image = pygame.transform.scale(self.image, (w,h))
-        self.rect = self.image.get_rect()
-
-    def scaleY(self, size: float):
-        h = size
-        w = self.image.get_width() * (size / self.image.get_height())
-        self.image = pygame.transform.scale(self.image, (w,h))
-
-    def adjust(self, dist: list[int]):
-        # print(dist[1] - self.pos[0] - self.rect.width)
-        self.pos[0] += dist[0] - self.pos[0]
-        self.pos[0] -= dist[1] - self.pos[0]
-
-class Map:
-    def __init__(self, path: str, col: str, screen):
-        self.image = pygame.image.load(path)
-        self.colImg = pygame.image.load(col)
-        self.collider = pygame.Surface((screen.get_width(), screen.get_height()))
-        self.rect = self.image.get_rect()
-        self.colX = [0,0,0,0]
-
-    def center(self, screen):
-        self.rect.x = -(self.rect.w / 2 - screen.get_width() / 2)
-        self.rect.y = -(self.rect.h / 2 - screen.get_height() / 2)
-
-    def move(self, x: int, y: int, screen):
-        self.rect.x = x - (self.rect.w / 2 - screen.get_width() / 2)
-        self.rect.y = y - (self.rect.h / 2 - screen.get_height() / 2)
-
-    def blit(self, screen):
-        screen.blit(self.image, self.rect)
-
-    def colCheck(self, player: sprite, screen: pygame.Surface):
-        self.collider.blit(self.colImg, self.rect)
-        checkPos = [
-            {"x": player.rect.x, "y": player.rect.y, "pos": player.pos[0]},
-            {"x": player.rect.x + player.rect.width, "y": player.rect.y, "pos": player.pos[0] - player.rect.width},
-        ]
-        for index, pos in enumerate(checkPos):
-            if self.__checkAt(pos["x"], pos["y"]):
-                continue
-            else:
-                self.colX[index] = pos["pos"]
-        dist = [self.colX[0] if self.__checkAt(x["x"], x["y"]) else x["pos"] for x in checkPos]
-        return dist
-       #  if self.__checkAt(player.rect.x, player.rect.y):
-       #      return self.colX
-       #  else:
-       #      self.colX = player.pos[0]
-       #  return player.pos[0]
-
-    def __checkAt(self, x: int, y: int):
-        if np.mean(self.collider.get_at((x, y))[:3]) < 10:
+        if [x for x in eventDict if x.get(str(action)) == key]:
             return True
         else:
             return False
+
+    def update(self):
+        self.events = pygame.event.get()
+
+    "private"
+    def __getDict(self):
+        return [{str(x.type): x.dict["key"]} for x in self.events if x.dict.get("key")]
+
+class Player:
+    def __init__(self, img: str, walkSpeed: int):
+        self.sprite = pygame.image.load(img)
+        self.rect = self.sprite.get_rect()
+        self.walkSpeed = walkSpeed
+        self.speed = [0, 0]
+        self.input = [
+            [pygame.K_LEFT, 0, -1],
+            [pygame.K_RIGHT, 0, 1],
+            [pygame.K_UP, 1, -1],
+            [pygame.K_DOWN, 1, 1],
+        ]
+
+    def move(self, dt):
+        self.rect = self.rect.move(self.speed[0] * dt, self.speed[1] * dt)
+
+    def event(self, index: int, click: bool, type: int):
+        if not click:
+            return 0
+        elif type == pygame.KEYDOWN:
+            self.speed[self.input[index][1]] = self.walkSpeed * self.input[index][2]
+        elif type == pygame.KEYUP:
+            self.speed[self.input[index][1]] = 0
+
+    def blit(self, screen: pygame.Surface):
+        screen.blit(self.sprite, self.rect)
+
+    def scaleX(self, size: float):
+        w = size
+        h = self.sprite.get_height() * (size / self.sprite.get_width())
+        self.sprite = pygame.transform.scale(self.sprite, (w,h))
+        self.rect = self.sprite.get_rect()
+
+    def scaleY(self, size: float):
+        h = size
+        w = self.sprite.get_width() * (size / self.sprite.get_height())
+        self.sprite = pygame.transform.scale(self.sprite, (w,h))
+
+class linje:
+    def __init__(self, A: tuple[int, int], B: tuple[int, int]):
+        self.A = A
+        self.B = B
+
+    "public"
+    def draw(self, screen: pygame.Surface):
+        pygame.draw.line(screen, (255, 0, 0), self.A, self.B, width=3)
+
+    def drawLerp(self, pos: tuple[int, int], screen: pygame.Surface, center: tuple[int, int]):
+        dif = [0, 0]
+        if pos[1] > self.A[1] and pos[1] < self.B[1]:
+            dif[0] = self.__col(pos, screen, center[0], 0)
+        elif pos[0] > self.A[0] and pos[0] < self.B[0]:
+            dif[1] = self.__col(pos, screen, center[1], 1)
+
+        return dif
+
+    "private"
+    def __intersect(self, pos: tuple[int, int], xy: int):
+        t = (pos[xy] - self.A[xy]) / (self.B[xy] - self.A[xy])
+        x = self.A[0] + (self.B[0] - self.A[0]) * t
+        y = self.A[1] + (self.B[1] - self.A[1]) * t
+
+        return [x, y]
+
+    def __col(self, pos: tuple[int, int], screen: pygame.Surface, center: int, xy: int):
+        color = (0, 0, 0)
+        inter = self.__intersect(pos, 1 if xy == 0 else 0)
+        dif = 0
+        if not (center > pos[xy] and center > inter[xy]) and not (center < pos[xy] and center < inter[xy]):
+            return 0
+        elif pos[xy] > center and pos[xy] > inter[xy]:
+            color = (255, 0, 0)
+            dif = inter[xy] - pos[xy]
+        elif pos[xy] < center and pos[xy] < inter[xy]:
+            color = (255, 0, 0)
+            dif = inter[xy] - pos[xy]
+        else:
+            color = (0, 255, 0)
+
+        pygame.draw.line(screen, color, pos, inter, width=3)
+
+        return dif
+
