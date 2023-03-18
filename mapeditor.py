@@ -10,7 +10,9 @@ class Menu(StateMachine):
     
     init = standard.to(standard)
     tolinje = standard.to(linje)
-    cancelLinje = linje.to(standard)
+    endLinje = linje.to(standard)
+
+    presses = 2
 
     @tolinje.on
     def on_tolinje(self):
@@ -64,8 +66,17 @@ while True:
             menu.tolinje()
 
         if menu.current_state.id == "linje":
-            color = (179, 41, 69)
+            screen.fill((3, 252, 115), buttons)
+            pygame.display.update(buttons)
+        else:
+            screen.fill(color, button)
+            screen.blit(buttonText.render(buttonsInfo[i][0], True, (0, 255, 140)), (button.left, button.centery))
+            pygame.display.update(button)
 
-        screen.fill(color, button)
-        screen.blit(buttonText.render(buttonsInfo[i][0], True, (0, 255, 140)), (button.left, button.centery))
-        pygame.display.update(button)
+    if not menu.current_state.id == "linje":
+        continue
+    elif not menu.presses > 0:
+        menu.endLinje()
+    elif inp.checkInput(pygame.MOUSEBUTTONDOWN, pygame.):
+        print("klik")
+        menu.presses -= 1
