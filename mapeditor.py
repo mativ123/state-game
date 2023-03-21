@@ -16,7 +16,7 @@ class Menu(StateMachine):
 
     @tolinje.on
     def on_tolinje(self):
-        print("tegn en linje")
+        self.presses = 2
 
 menu = Menu()
 menu.init()
@@ -50,21 +50,34 @@ screen.blit(img, imgRect)
 screen.fill((3, 252, 115), buttons)
 pygame.display.flip()
 
+linecoor = [[0, 0], [0, 0]]
+
 while True:
     inp.update()
     if inp.quit():
         sys.exit()
+
+    if not menu.current_state.id == "linje":
+        pass
+    elif not menu.presses > 0:
+        menu.endLinje()
+        pygame.draw.line(screen, (255, 0, 0), linecoor[0], linecoor[1], width=3)
+        pygame.display.update()
+        linecoor = [0, 0]
+    elif inp.checkMouse(pygame.MOUSEBUTTONDOWN, 0):
+        print("klik")
+        linecoor[menu.presses - 1] = list(pygame.mouse.get_pos())
+        menu.presses -= 1
 
     for i, butt in enumerate(buttonsInfo):
         color = (0,0,0)
         button.y = paddingy + ((paddingy + button.h) * i)
         if not button.collidepoint(pygame.mouse.get_pos()):
             color = (235, 52, 88)
-        elif not pygame.mouse.get_pressed(num_buttons=3)[0]:
+        elif not inp.checkMouse(pygame.MOUSEBUTTONDOWN, 0):
             color = (179, 41, 69)
         elif menu.current_state.id != "linje":
             menu.tolinje()
-
         if menu.current_state.id == "linje":
             screen.fill((3, 252, 115), buttons)
             pygame.display.update(buttons)
@@ -72,11 +85,3 @@ while True:
             screen.fill(color, button)
             screen.blit(buttonText.render(buttonsInfo[i][0], True, (0, 255, 140)), (button.left, button.centery))
             pygame.display.update(button)
-
-    if not menu.current_state.id == "linje":
-        continue
-    elif not menu.presses > 0:
-        menu.endLinje()
-    elif inp.checkInput(pygame.MOUSEBUTTONDOWN, pygame.):
-        print("klik")
-        menu.presses -= 1

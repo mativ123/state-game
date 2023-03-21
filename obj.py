@@ -17,12 +17,20 @@ class Event:
         else:
             return False
 
+    def checkMouse(self, action: int, mButton: int):
+        ifType = action in self.__getTypes()
+        ifButton = pygame.mouse.get_pressed()[mButton]
+        return ifType and ifButton
+
     def update(self):
         self.events = pygame.event.get()
 
     "private"
     def __getDict(self):
         return [{str(x.type): x.dict["key"]} for x in self.events if x.dict.get("key")]
+    
+    def __getTypes(self):
+        return [x.type for x in self.events]
 
 class Player:
     def __init__(self, img: str, walkSpeed: int):
@@ -106,4 +114,8 @@ class linje:
         pygame.draw.line(screen, color, pos, inter, width=3)
 
         return dif
+
+class Editor:
+    def __init__(self):
+
 
