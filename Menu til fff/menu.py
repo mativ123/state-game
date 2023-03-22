@@ -60,13 +60,13 @@ while True:
               
             #if the mouse is clicked on the 
             # button the game is terminated 
-            if width/2 <= mouse[0] <= width/2+140 and height/2 <= mouse[1] <= height/2+40: 
+            if width/2-90 <= mouse[0] <= width/2+140-50 and height/2 <= mouse[1] <= height/2+40: 
                 pygame.quit() 
             
-            if width/2 <= mouse[0] <= width/2+140 and height/2-60 <= mouse[1] <= height/2-20:
+            if width/2-90 <= mouse[0] <= width/2+140-50 and height/2-60 <= mouse[1] <= height/2-20:
                 print("lore")
 
-            if width/2 <= mouse[0] <= width/2+140 and height/2-120 <= mouse[1] <= height/2-80:
+            if width/2-90 <= mouse[0] <= width/2+140-50 and height/2-180 <= mouse[1] <= height/2-80:
                 print("start")
 
     # fills the screen with a color 
