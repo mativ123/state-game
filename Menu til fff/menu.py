@@ -35,10 +35,11 @@ smallfont1 = pygame.font.SysFont('Castellar',55)
 # this font 
 text = smallfont.render('Quit' , True , color) 
 text1 = smallfont.render('Start Game' , True , color)
+text2 = smallfont.render('Chronicles' , True , color)
 textover = smallfont1.render('Funky Fowl Frenzy', True , color_red)
 
 #Loads picture
-andImg = pygame.image.load('and med pistol.png')
+andImg = pygame.image.load('./Menu til fff/and med pistol.png')
 
 def andpic(x,y):
     screen.blit(andImg, (x,y))
@@ -62,8 +63,11 @@ while True:
             if width/2 <= mouse[0] <= width/2+140 and height/2 <= mouse[1] <= height/2+40: 
                 pygame.quit() 
             
-            if width/2 <= mouse[0] <= width/2+140 and height/2-60 <= mouse[1] <= height/2+100:
-                print("alfred og mathias er mennesker")
+            if width/2 <= mouse[0] <= width/2+140 and height/2-60 <= mouse[1] <= height/2-20:
+                print("lore")
+
+            if width/2 <= mouse[0] <= width/2+140 and height/2-120 <= mouse[1] <= height/2-80:
+                print("start")
 
     # fills the screen with a color 
     screen.fill((0,0,0)) 
@@ -88,14 +92,20 @@ while True:
     else: 
         pygame.draw.rect(screen,color_dark,[width/2-90,height/2-60,180,40]) 
     
+    if width/2-90 <= mouse[0] <= width/2+140-50 and height/2-120 <= mouse[1] <= height/2-80: 
+        pygame.draw.rect(screen,color_light,[width/2-90,height/2-120,180,40]) 
+          
+    else: 
+        pygame.draw.rect(screen,color_dark,[width/2-90,height/2-120,180,40]) 
+    
     # superimposing the text onto our button 
     screen.blit(text , (width/2-90+50,height/2+5)) 
     
-    screen.blit(text1 , (width/2-88,height/2-55)) 
+    screen.blit(text1 , (width/2-88,height/2-115)) 
 
     screen.blit(textover , (width/2-340,height/2-300)) 
 
-    
+    screen.blit(text2 , (width/2-88,height/2-55))
 
     # updates the frames of the game 
     pygame.display.update() 
