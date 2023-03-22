@@ -1,4 +1,5 @@
 import pygame
+import json
 
 class Event:
     def __init__(self):
@@ -117,5 +118,43 @@ class linje:
 
 class Editor:
     def __init__(self):
+        self.lines = []
+        self.rects = []
 
+    def addLine(self, coor: tuple[tuple[int, int], tuple[int, int]]):
+        self.lines.append(coor)
+        self.__genRect(coor)
 
+    def save(self, name: str):
+        info = [{"A": x[0], "B": x[1]} for x in self.lines]
+
+        with open(f"{name}.json", "w") as fp:
+            for line in info:
+                json.dump(line, fp, indent=4)
+
+    def drawPoints(self, screen: pygame.Surface):
+        for line in self.lines:
+            pygame.draw.circle(screen, (255, 0, 0), line[0], 3, width=0)
+            pygame.draw.circle(screen, (255, 0, 0), line[1], 3, width=0)
+        pygame.display.flip()
+
+    def __genRect(self, line: tuple[tuple[int, int], tuple[int, int]]):
+        x = 0
+        y = 0
+        w = 0
+        h = 0
+        if line[0][0] < line[1][0]:
+            x = line[0][0]
+            w = line[1][0] - x
+        elif line[0][0] > line[1][0]: 
+            x = line[1][0]
+            w = line[0][0] - x
+
+        if line[0][1] < line[1][1]:
+            y = line[0][1]
+            h = line[1][1] - y
+        elif line[0][0] > line[1][0]: 
+            y = line[1][1]
+            h = line[0][1] - y
+
+        self.rects.append(pygame.Rect(x, y, w, h))

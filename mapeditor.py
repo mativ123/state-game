@@ -1,7 +1,7 @@
 import json
 import pygame
 import sys
-from obj import Event
+from obj import Event, Editor
 from statemachine import StateMachine, State
 
 class Menu(StateMachine):
@@ -52,6 +52,8 @@ pygame.display.flip()
 
 linecoor = [[0, 0], [0, 0]]
 
+editor = Editor()
+
 while True:
     inp.update()
     if inp.quit():
@@ -61,9 +63,9 @@ while True:
         pass
     elif not menu.presses > 0:
         menu.endLinje()
-        pygame.draw.line(screen, (255, 0, 0), linecoor[0], linecoor[1], width=3)
-        pygame.display.update()
-        linecoor = [0, 0]
+        editor.addLine(linecoor)
+        editor.drawPoints(screen)
+        linecoor = [[0, 0], [0, 0]]
     elif inp.checkMouse(pygame.MOUSEBUTTONDOWN, 0):
         print("klik")
         linecoor[menu.presses - 1] = list(pygame.mouse.get_pos())
@@ -76,8 +78,10 @@ while True:
             color = (235, 52, 88)
         elif not inp.checkMouse(pygame.MOUSEBUTTONDOWN, 0):
             color = (179, 41, 69)
-        elif menu.current_state.id != "linje":
+        elif menu.current_state.id != "linje" and butt[0] == "lav linje":
             menu.tolinje()
+        elif menu.current_state.id != "linje" and butt[0] == "gem":
+            editor.save("1")
         if menu.current_state.id == "linje":
             screen.fill((3, 252, 115), buttons)
             pygame.display.update(buttons)
