@@ -1,24 +1,14 @@
+# Her importere jeg pygame
 import pygame
+
+# Her definere jeg klassen "Voiceline"
 class Voiceline:
     def __init__(self, path):
+        # Her initialisere jeg pygame mixer
         pygame.mixer.init()
+
+        # Her loader lydden
         sound = pygame.mixer.Sound(path)
+
+        # Her spiller lyden så
         sound.play()
-
-
-
-Voiceline("untitled.wav")
-
-
-pygame.init()
-Yellow = (255, 255, 0)
-
-x = 400
-y = 400
-
-screen = pygame.display.set_mode((x, y))
-
-
-
-while True:
-    screen.fill(Yellow)
