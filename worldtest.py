@@ -1,33 +1,35 @@
-import sys
 import pygame
-import statemachine
-import json
-from obj import Event, Player, linje
+import sys
+from obj import Event, Player, World
 
 pygame.init()
+pygame.font.init()
+
+fps = pygame.font.SysFont("Arial", 20)
+fpsrect = pygame.Rect(0, 0, 30, 30)
 
 screen = pygame.display.set_mode((1000, 1000))
-bg = pygame.image.load("sprites/map 1.png")
-rec = bg.get_rect()
-rec.x = screen.get_width() / 2 - rec.w / 2
-rec.y = screen.get_height() / 2 - rec.h / 2
 
 event = Event()
+world = World("sprites/map 1.png", screen)
+
+screen.fill((0, 0, 0))
+pygame.display.flip()
+
 duck = Player("sprites/and.png", 1)
 
 clock = pygame.time.Clock()
 
-# screen.fill((0, 0, 0))
-# screen.blit(bg, rec)
-# pygame.display.flip()
+world.bgBlit(screen)
 
 while True:
-    event.update()
+    dt = clock.tick(60)
+    print(clock.get_fps())
+    pygame.display.update(fpsrect)
 
+    event.update()
     if event.quit():
         sys.exit()
-
-    dt = clock.tick(60)
 
     for i, key in enumerate(duck.input):
         if event.checkInput(pygame.KEYDOWN, key[0]):
@@ -35,9 +37,5 @@ while True:
         if event.checkInput(pygame.KEYUP, key[0]):
             duck.event(i, True, pygame.KEYUP)
 
-    # screen.blit(bg, rec)
     duck.move(dt)
-    screen.fill((0, 0, 0))
-    duck.blit(screen)
-    pygame.display.flip()
-
+    world.blitPlayer(duck, screen)

@@ -37,6 +37,7 @@ class Player:
     def __init__(self, img: str, walkSpeed: int):
         self.sprite = pygame.image.load(img)
         self.rect = self.sprite.get_rect()
+        self.prevRect = pygame.Rect(self.rect)
         self.walkSpeed = walkSpeed
         self.speed = [0, 0]
         self.input = [
@@ -47,6 +48,7 @@ class Player:
         ]
 
     def move(self, dt):
+        self.prevRect = self.rect
         self.rect = self.rect.move(self.speed[0] * dt, self.speed[1] * dt)
 
     def event(self, index: int, click: bool, type: int):
@@ -158,3 +160,21 @@ class Editor:
             h = line[0][1] - y
 
         self.rects.append(pygame.Rect(x, y, w, h))
+
+class World:
+    def __init__(self, img: str, screen: pygame.Surface):
+        self.bg = pygame.image.load(img)
+        self.bgrect = self.bg.get_rect()
+        self.bgrect.x = screen.get_width() / 2 - self.bgrect.w / 2
+        self.bgrect.y = screen.get_height() / 2 - self.bgrect.h / 2
+
+    def bgBlit(self, screen: pygame.Surface):
+        screen.blit(self.bg, self.bgrect)
+        pygame.display.flip()
+
+    def blitPlayer(self, player: Player, screen: pygame.Surface):
+        screen.set_clip(player.prevRect)
+        screen.blit(self.bg, self.bgrect)
+        screen.set_clip(player.rect)
+        screen.blit(player.sprite, player.rect)
+        pygame.display.update([player.rect, player.prevRect])

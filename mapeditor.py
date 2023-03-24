@@ -30,7 +30,7 @@ buttons = pygame.Rect(imgRect.w, 0, 200, imgRect.h)
 screen = pygame.display.set_mode((imgRect.w + buttons.w, imgRect.h))
 paddingx = 10
 paddingy = 10
-buttonsInfo = [["lav linje",], ["gem",]]
+buttonsInfo = [["lav linje",], ["gem",],]
 button = pygame.Rect(buttons.x + paddingx, 0, buttons.w - paddingx * 2, buttons.h / len(buttonsInfo) - paddingy * 2)
 
 buttonText = pygame.font.Font("Consolas-Regular.ttf", 20)
