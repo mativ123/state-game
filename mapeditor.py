@@ -81,7 +81,7 @@ while True:
         elif menu.current_state.id != "linje" and butt[0] == "lav linje":
             menu.tolinje()
         elif menu.current_state.id != "linje" and butt[0] == "gem":
-            editor.save("1")
+            editor.save(sys.argv[2])
         if menu.current_state.id == "linje":
             screen.fill((3, 252, 115), buttons)
             pygame.display.update(buttons)

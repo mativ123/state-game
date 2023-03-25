@@ -18,10 +18,8 @@ while True:
         sys.exit()
 
     for i, key in enumerate(dinmor.input):
-        if inp.checkInput(pygame.KEYDOWN, key[0]):
-            dinmor.event(i, True, pygame.KEYDOWN)
-        if inp.checkInput(pygame.KEYUP, key[0]):
-            dinmor.event(i, True, pygame.KEYUP)
+        dinmor.event(i, inp.checkInput(pygame.KEYDOWN, key[0]), pygame.KEYDOWN)
+        dinmor.event(i, inp.checkInput(pygame.KEYUP, key[0]), pygame.KEYUP)
 
     dinmor.move(dt)
 

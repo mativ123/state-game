@@ -131,8 +131,7 @@ class Editor:
         info = [{"A": x[0], "B": x[1]} for x in self.lines]
 
         with open(f"{name}.json", "w") as fp:
-            for line in info:
-                json.dump(line, fp, indent=4)
+            json.dump(info, fp, indent=4)
 
     def drawPoints(self, screen: pygame.Surface):
         for line in self.lines:
@@ -167,6 +166,7 @@ class World:
         self.bgrect = self.bg.get_rect()
         self.bgrect.x = screen.get_width() / 2 - self.bgrect.w / 2
         self.bgrect.y = screen.get_height() / 2 - self.bgrect.h / 2
+        self.lines = []
 
     def bgBlit(self, screen: pygame.Surface):
         screen.blit(self.bg, self.bgrect)
@@ -178,3 +178,9 @@ class World:
         screen.set_clip(player.rect)
         screen.blit(player.sprite, player.rect)
         pygame.display.update([player.rect, player.prevRect])
+
+    def genLines(self, fName: str):
+        f = open(f"{fName}.json", "r")
+        data = json.load(f)
+        for entry in data:
+            self.lines.append(linje(entry["A"], entry["B"]))
