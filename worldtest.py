@@ -1,39 +1,32 @@
 import pygame
 import sys
-from obj import Event, Player, World, linje
+from obj import Event, World, Player, linje
 
 pygame.init()
-pygame.font.init()
 
 screen = pygame.display.set_mode((1000, 1000))
 
-event = Event()
 world = World("sprites/map 2.png", screen)
+event = Event()
 
-duck = Player("sprites/and.png", 1)
-
-clock = pygame.time.Clock()
+duck = Player("sprites/and.png", 0.65)
+duck.scaleY(100)
 
 world.bgBlit(screen)
 
-world.genLines("din")
-for line in world.lines:
-    print(line.A)
-    line.draw(screen)
+clock = pygame.time.Clock()
 
-pygame.display.flip()
+world.genLines("din")
 
 while True:
     dt = clock.tick(60)
-    print(clock.get_fps())
-
     event.update()
     if event.quit():
         sys.exit()
 
-   #  for i, key in enumerate(duck.input):
-   #      duck.event(i, event.checkInput(pygame.KEYDOWN, key[0]), pygame.KEYDOWN)
-   #      duck.event(i, event.checkInput(pygame.KEYUP, key[0]), pygame.KEYUP)
+    for i, inp in enumerate(duck.input):
+        duck.event(i, event.checkInput(pygame.KEYDOWN, inp[0]), pygame.KEYDOWN)
+        duck.event(i, event.checkInput(pygame.KEYUP, inp[0]), pygame.KEYUP)
 
-   #  duck.move(dt)
-   #  world.blitPlayer(duck, screen)
+    duck.move(dt)
+    world.blitPlayer(duck, screen)

@@ -46,10 +46,13 @@ class Player:
             [pygame.K_UP, 1, -1],
             [pygame.K_DOWN, 1, 1],
         ]
+        self.__genLines(self.rect)
 
     def move(self, dt):
         self.prevRect = self.rect
         self.rect = self.rect.move(self.speed[0] * dt, self.speed[1] * dt)
+        if self.prevRect != self.rect:
+            self.__genLines(self.rect)
 
     def event(self, index: int, click: bool, type: int):
         if not click:
@@ -73,6 +76,14 @@ class Player:
         w = self.sprite.get_width() * (size / self.sprite.get_height())
         self.sprite = pygame.transform.scale(self.sprite, (w,h))
 
+    def __genLines(self, rect: pygame.Rect):
+        self.lines = [
+            (rect.topleft, rect.topright),
+            (rect.topright, rect.bottomright),
+            (rect.bottomright, rect.bottomleft),
+            (rect.bottomleft, rect.topleft),
+        ]
+
 class linje:
     def __init__(self, A: tuple[int, int], B: tuple[int, int]):
         self.A = A
@@ -82,7 +93,21 @@ class linje:
     def draw(self, screen: pygame.Surface):
         pygame.draw.line(screen, (255, 0, 0), self.A, self.B, width=3)
 
-    def drawLerp(self, pos: tuple[int, int], screen: pygame.Surface, center: tuple[int, int]):
+    def colLine(self, line: tuple[tuple[int, int], tuple[int, int]], screen, center: tuple[int, int]):
+        upright = True
+        if (line[0][0] > self.B[0] or line[1][0] < self.A[0]) and (line[0][1] > self.B[1] or line[1][1] < self.A[1]):
+            return 0
+        
+        if line[0][0] > self.A[0] or line[1][0] < self.B[0]:
+            upright = False
+        else:
+            upright = True
+
+        if line[0][1] < self.B[1] or line[1][1] > self.B[1] and upright:
+            self.__col(line[0], screen, center[0], 0)
+
+    "private"
+    def __colPoint(self, pos: tuple[int, int], screen: pygame.Surface, center: tuple[int, int]):
         dif = [0, 0]
         if pos[1] > self.A[1] and pos[1] < self.B[1]:
             dif[0] = self.__col(pos, screen, center[0], 0)
@@ -91,7 +116,6 @@ class linje:
 
         return dif
 
-    "private"
     def __intersect(self, pos: tuple[int, int], xy: int):
         t = (pos[xy] - self.A[xy]) / (self.B[xy] - self.A[xy])
         x = self.A[0] + (self.B[0] - self.A[0]) * t
@@ -103,6 +127,7 @@ class linje:
         color = (0, 0, 0)
         inter = self.__intersect(pos, 1 if xy == 0 else 0)
         dif = 0
+        print(f"test: {pos[xy]}, inter: {inter[xy]}, center: {center}")
         if not (center > pos[xy] and center > inter[xy]) and not (center < pos[xy] and center < inter[xy]):
             return 0
         elif pos[xy] > center and pos[xy] > inter[xy]:
