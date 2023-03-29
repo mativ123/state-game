@@ -1,5 +1,6 @@
 import pygame
 import json
+import time
 
 class Event:
     def __init__(self):
@@ -48,13 +49,13 @@ class Player:
             [pygame.K_UP, 1, -1],
             [pygame.K_DOWN, 1, 1],
         ]
-        self.__genLines(self.rect)
+        self.__genPoints()
 
     def move(self, dt):
         self.prevRect = self.rect
         self.rect = self.rect.move(self.speed[0] * dt, self.speed[1] * dt)
         if self.prevRect != self.rect:
-            self.__genLines(self.rect)
+            self.__genPoints()
 
     def event(self, index: int, click: bool, type: int):
         if not click:
@@ -80,21 +81,19 @@ class Player:
 
     def collision(self, worldLine: list, screen: pygame.Surface):
         res = []
-
         for col in worldLine:
-            res = [col.colLine(line, screen, self.rect.center) for line in self.lines]
+            res.extend([col.colPoint(x, screen, self.rect.center) for x in self.corners])
         for dif in res:
+            if dif[0] != 0:
+                self.speed[0] = 0
+            if dif[1] != 0:
+                self.speed[1] = 0
+
             self.rect = self.rect.move(dif)
-            self.__genLines(self.rect)
+        self.__genPoints()
 
-
-    def __genLines(self, rect: pygame.Rect):
-        self.lines = [
-            (rect.topleft, rect.topright),
-            (rect.topright, rect.bottomright),
-            (rect.bottomright, rect.bottomleft),
-            (rect.bottomleft, rect.topleft),
-        ]
+    def __genPoints(self):
+        self.corners = [self.rect.topleft, self.rect.topright, self.rect.bottomright, self.rect.bottomleft]
 
 class linje:
     def __init__(self, A: tuple[int, int], B: tuple[int, int]):
@@ -104,42 +103,6 @@ class linje:
     "public"
     def draw(self, screen: pygame.Surface):
         pygame.draw.line(screen, (255, 0, 0), self.A, self.B, width=3)
-
-    def colLine(self, line: tuple[tuple[int, int], tuple[int, int]], screen, center: tuple[int, int]):
-        upright = True
-        inside = False
-        dif = [0, 0]
-        if (line[0][0] > self.B[0] or line[1][0] < self.A[0]) and (line[0][1] > self.B[1] or line[1][1] < self.A[1]):
-            return dif
-        
-        if line[0][0] > self.A[0] and line[1][0] < self.B[0]:
-            upright = False
-            inside = True
-        elif line[0][1] > self.A[1] and line[1][1] < self.B[1]:
-            upright = True
-            inside = True
-        if line[0][0] < self.A[0] and line[1][0] > self.B[0]:
-            upright = False
-            inside = False
-        elif line[0][1] < self.A[1] and line[1][1] > self.B[1]:
-            upright = True
-            inside = False
-
-        if not inside:
-            return dif
-        if line[0][1] < self.B[1] and upright:
-            dif[0] = self.__insideCol(line[0], screen, center[0], 0)
-        if line[1][1] > self.A[1] and upright:
-            dif[0] = self.__insideCol(line[1], screen, center[0], 0)
-
-        if upright:
-            return dif
-        if line[0][0] < self.B[0]:
-            dif[1] = self.__insideCol(line[0], screen, center[1], 1)
-        if line[1][0] > self.A[0]:
-            dif[1] = self.__insideCol(line[1], screen, center[1], 1)
-
-        return dif
 
     def colPoint(self, pos: tuple[int, int], screen: pygame.Surface, center: tuple[int, int]):
         dif = [0, 0]
@@ -158,7 +121,7 @@ class linje:
 
         return [x, y]
 
-    def __insideCol(self, pos: tuple[int, int], screen: pygame.Surface, center: int, xy: int):
+    def __col(self, pos: tuple[int, int], screen: pygame.Surface, center: int, xy: int):
         color = (0, 0, 0)
         inter = 0
         inter = self.__intersect(pos, (self.A, self.B), 1 if xy == 0 else 0)
@@ -174,7 +137,7 @@ class linje:
         else:
             color = (0, 255, 0)
 
-        pygame.draw.line(screen, color, pos, inter, width=3)
+        # pygame.draw.line(screen, color, pos, inter, width=3)
 
         return dif
 
@@ -194,9 +157,10 @@ class Editor:
             json.dump(info, fp, indent=4)
 
     def drawPoints(self, screen: pygame.Surface):
+        perc = lambda t, s : (t[0] * (s.get_width() - 200), t[1] * (s.get_height()))
         for line in self.lines:
-            pygame.draw.circle(screen, (255, 0, 0), line[0], 3, width=0)
-            pygame.draw.circle(screen, (255, 0, 0), line[1], 3, width=0)
+            pygame.draw.circle(screen, (255, 0, 0), perc(line[0], screen), 3, width=0)
+            pygame.draw.circle(screen, (255, 0, 0), perc(line[1], screen), 3, width=0)
         pygame.display.flip()
 
     def __genRect(self, line: tuple[tuple[int, int], tuple[int, int]]):
@@ -239,8 +203,9 @@ class World:
         screen.blit(player.sprite, player.rect)
         pygame.display.update([player.rect, player.prevRect])
 
-    def genLines(self, fName: str):
+    def genLines(self, fName: str, screen: pygame.Surface):
+        perc = lambda t, s : (t[0] * s.get_width(), t[1] * s.get_height())
         f = open(f"{fName}.json", "r")
         data = json.load(f)
         for entry in data:
-            self.lines.append(linje(entry["A"], entry["B"]))
+            self.lines.append(linje(perc(entry["A"], screen), perc(entry["B"], screen)))

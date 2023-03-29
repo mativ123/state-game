@@ -67,8 +67,9 @@ while True:
         editor.drawPoints(screen)
         linecoor = [[0, 0], [0, 0]]
     elif inp.checkMouse(pygame.MOUSEBUTTONDOWN, 0):
-        print("klik")
-        linecoor[menu.presses - 1] = list(pygame.mouse.get_pos())
+        mPos = list(pygame.mouse.get_pos())
+        linecoor[2 - menu.presses] = [mPos[0] / (screen.get_width() - 200), mPos[1] / screen.get_height()]
+        print(linecoor)
         menu.presses -= 1
 
     for i, butt in enumerate(buttonsInfo):

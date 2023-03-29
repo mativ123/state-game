@@ -16,7 +16,7 @@ world.bgBlit(screen)
 
 clock = pygame.time.Clock()
 
-world.genLines("map1")
+world.genLines("map1", screen)
 
 while True:
     dt = clock.tick(60)
