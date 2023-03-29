@@ -85,6 +85,7 @@ class Player:
             res = [col.colLine(line, screen, self.rect.center) for line in self.lines]
         for dif in res:
             self.rect = self.rect.move(dif)
+            self.__genLines(self.rect)
 
 
     def __genLines(self, rect: pygame.Rect):
