@@ -6,17 +6,17 @@ pygame.init()
 
 screen = pygame.display.set_mode((1000, 1000))
 
-world = World("sprites/map 2.png", screen)
+world = World("sprites/map 1.png", screen)
 event = Event()
 
-duck = Player("sprites/and.png", 0.65)
+duck = Player("sprites/and.png", 0.65, screen)
 duck.scaleY(100)
 
 world.bgBlit(screen)
 
 clock = pygame.time.Clock()
 
-world.genLines("din")
+world.genLines("map1")
 
 while True:
     dt = clock.tick(60)
@@ -29,4 +29,6 @@ while True:
         duck.event(i, event.checkInput(pygame.KEYUP, inp[0]), pygame.KEYUP)
 
     duck.move(dt)
+    duck.collision(world.lines, screen)
     world.blitPlayer(duck, screen)
+    pygame.display.flip()

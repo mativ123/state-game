@@ -34,9 +34,11 @@ class Event:
         return [x.type for x in self.events]
 
 class Player:
-    def __init__(self, img: str, walkSpeed: int):
+    def __init__(self, img: str, walkSpeed: int, screen: pygame.Surface):
         self.sprite = pygame.image.load(img)
         self.rect = self.sprite.get_rect()
+        self.rect.x = screen.get_width() / 2 - self.rect.w / 2
+        self.rect.y = screen.get_height() / 2 - self.rect.h / 2
         self.prevRect = pygame.Rect(self.rect)
         self.walkSpeed = walkSpeed
         self.speed = [0, 0]
@@ -76,6 +78,15 @@ class Player:
         w = self.sprite.get_width() * (size / self.sprite.get_height())
         self.sprite = pygame.transform.scale(self.sprite, (w,h))
 
+    def collision(self, worldLine: list, screen: pygame.Surface):
+        res = []
+
+        for col in worldLine:
+            res = [col.colLine(line, screen, self.rect.center) for line in self.lines]
+        for dif in res:
+            self.rect = self.rect.move(dif)
+
+
     def __genLines(self, rect: pygame.Rect):
         self.lines = [
             (rect.topleft, rect.topright),
@@ -95,19 +106,41 @@ class linje:
 
     def colLine(self, line: tuple[tuple[int, int], tuple[int, int]], screen, center: tuple[int, int]):
         upright = True
+        inside = False
+        dif = [0, 0]
         if (line[0][0] > self.B[0] or line[1][0] < self.A[0]) and (line[0][1] > self.B[1] or line[1][1] < self.A[1]):
-            return 0
+            return dif
         
-        if line[0][0] > self.A[0] or line[1][0] < self.B[0]:
+        if line[0][0] > self.A[0] and line[1][0] < self.B[0]:
             upright = False
-        else:
+            inside = True
+        elif line[0][1] > self.A[1] and line[1][1] < self.B[1]:
             upright = True
+            inside = True
+        if line[0][0] < self.A[0] and line[1][0] > self.B[0]:
+            upright = False
+            inside = False
+        elif line[0][1] < self.A[1] and line[1][1] > self.B[1]:
+            upright = True
+            inside = False
 
-        if line[0][1] < self.B[1] or line[1][1] > self.B[1] and upright:
-            self.__col(line[0], screen, center[0], 0)
+        if not inside:
+            return dif
+        if line[0][1] < self.B[1] and upright:
+            dif[0] = self.__insideCol(line[0], screen, center[0], 0)
+        if line[1][1] > self.A[1] and upright:
+            dif[0] = self.__insideCol(line[1], screen, center[0], 0)
 
-    "private"
-    def __colPoint(self, pos: tuple[int, int], screen: pygame.Surface, center: tuple[int, int]):
+        if upright:
+            return dif
+        if line[0][0] < self.B[0]:
+            dif[1] = self.__insideCol(line[0], screen, center[1], 1)
+        if line[1][0] > self.A[0]:
+            dif[1] = self.__insideCol(line[1], screen, center[1], 1)
+
+        return dif
+
+    def colPoint(self, pos: tuple[int, int], screen: pygame.Surface, center: tuple[int, int]):
         dif = [0, 0]
         if pos[1] > self.A[1] and pos[1] < self.B[1]:
             dif[0] = self.__col(pos, screen, center[0], 0)
@@ -116,18 +149,19 @@ class linje:
 
         return dif
 
-    def __intersect(self, pos: tuple[int, int], xy: int):
-        t = (pos[xy] - self.A[xy]) / (self.B[xy] - self.A[xy])
-        x = self.A[0] + (self.B[0] - self.A[0]) * t
-        y = self.A[1] + (self.B[1] - self.A[1]) * t
+    "private"
+    def __intersect(self, pos1: tuple[int, int], pos2: tuple[tuple[int, int], tuple[int, int]], xy: int):
+        t = (pos1[xy] - pos2[0][xy]) / (pos2[1][xy] - pos2[0][xy])
+        x = pos2[0][0] + (pos2[1][0] - pos2[0][0]) * t
+        y = pos2[0][1] + (pos2[1][1] - pos2[0][1]) * t
 
         return [x, y]
 
-    def __col(self, pos: tuple[int, int], screen: pygame.Surface, center: int, xy: int):
+    def __insideCol(self, pos: tuple[int, int], screen: pygame.Surface, center: int, xy: int):
         color = (0, 0, 0)
-        inter = self.__intersect(pos, 1 if xy == 0 else 0)
+        inter = 0
+        inter = self.__intersect(pos, (self.A, self.B), 1 if xy == 0 else 0)
         dif = 0
-        print(f"test: {pos[xy]}, inter: {inter[xy]}, center: {center}")
         if not (center > pos[xy] and center > inter[xy]) and not (center < pos[xy] and center < inter[xy]):
             return 0
         elif pos[xy] > center and pos[xy] > inter[xy]:
