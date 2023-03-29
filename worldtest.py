@@ -17,7 +17,6 @@ world.bgBlit(screen)
 clock = pygame.time.Clock()
 
 world.genLines("map1")
-print([f"A: {line.A}, {line.B} - B: {line.A}, {line.B}" for line in world.lines])
 
 while True:
     dt = clock.tick(60)
