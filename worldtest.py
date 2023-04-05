@@ -16,7 +16,7 @@ world.bgBlit(screen)
 
 clock = pygame.time.Clock()
 
-world.genLines("map1", screen)
+world.genLines("map1")
 
 while True:
     dt = clock.tick(60)
@@ -31,4 +31,3 @@ while True:
     duck.move(dt)
     duck.collision(world.lines, screen)
     world.blitPlayer(duck, screen)
-    pygame.display.flip()

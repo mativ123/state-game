@@ -1,6 +1,8 @@
 import pygame
 import json
 import time
+import random
+import math
 
 class Event:
     def __init__(self):
@@ -72,12 +74,13 @@ class Player:
         w = size
         h = self.sprite.get_height() * (size / self.sprite.get_width())
         self.sprite = pygame.transform.scale(self.sprite, (w,h))
-        self.rect = self.sprite.get_rect()
+        self.rect.update(self.rect.topleft, self.sprite.get_size())
 
     def scaleY(self, size: float):
         h = size
         w = self.sprite.get_width() * (size / self.sprite.get_height())
         self.sprite = pygame.transform.scale(self.sprite, (w,h))
+        self.rect.update(self.rect.topleft, self.sprite.get_size())
 
     def collision(self, worldLine: list, screen: pygame.Surface):
         res = []
@@ -191,6 +194,7 @@ class World:
         self.bgrect.x = screen.get_width() / 2 - self.bgrect.w / 2
         self.bgrect.y = screen.get_height() / 2 - self.bgrect.h / 2
         self.lines = []
+        self.mush = []
 
     def bgBlit(self, screen: pygame.Surface):
         screen.blit(self.bg, self.bgrect)
@@ -203,9 +207,59 @@ class World:
         screen.blit(player.sprite, player.rect)
         pygame.display.update([player.rect, player.prevRect])
 
-    def genLines(self, fName: str, screen: pygame.Surface):
-        perc = lambda t, s : (t[0] * s.get_width(), t[1] * s.get_height())
+    def genLines(self, fName: str):
         f = open(f"{fName}.json", "r")
         data = json.load(f)
         for entry in data:
-            self.lines.append(linje(perc(entry["A"], screen), perc(entry["B"], screen)))
+            self.lines.append(linje(self.__lineOffset(entry["A"]), self.__lineOffset(entry["B"])))
+
+    def blitMush(self, screen: pygame.Surface):
+        screen.set_clip()
+        screen.blits((shroom.sprite, shroom.rect) for shroom in self.mush)
+        pygame.display.update([shroom.rect for shroom in self.mush])
+
+    def genMush(self, n: int):
+        for i in range(n):
+            temp = collectable("sprites/svamp.png", self.__randomPos())
+            temp.scaleX(70)
+            self.mush.append(temp)
+
+    def pickup(self, player: tuple[int, int]):
+        for shroom in self.mush:
+            if shroom.checkPickup(player):
+                print("pickup")
+
+    def __randomPos(self):
+        x = random.randint(self.bgrect.x, self.bgrect.x + self.bgrect.w)
+        y = random.randint(self.bgrect.y, self.bgrect.y + self.bgrect.h)
+        return (x, y)
+
+    def __lineOffset(self, point: tuple[int, int]):
+        return (point[0] * self.bg.get_width() + self.bgrect.x, point[1] * self.bg.get_height() + self.bgrect.y)
+
+class collectable:
+    def __init__(self, img: str, pos: tuple[int, int]):
+        self.sprite = pygame.image.load(img)
+        self.rect = self.sprite.get_rect()
+        self.rect = self.rect.move(pos)
+
+    def scaleX(self, size: float):
+        w = size
+        h = self.sprite.get_height() * (size / self.sprite.get_width())
+        self.sprite = pygame.transform.scale(self.sprite, (w,h))
+        self.rect.update(self.rect.topleft, self.sprite.get_size())
+
+    def scaleY(self, size: float):
+        h = size
+        w = self.sprite.get_width() * (size / self.sprite.get_height())
+        self.sprite = pygame.transform.scale(self.sprite, (w,h))
+        self.rect.update(self.rect.topleft, self.sprite.get_size())
+
+    def checkPickup(self, player: tuple[int, int]):
+        x = pow(self.rect.centerx - player[0], 2)
+        y = pow(self.rect.centery - player[1], 2)
+        dist = math.sqrt(x + y)
+        if dist < 140:
+            return True
+        else:
+            return False
