@@ -191,8 +191,11 @@ class World:
         self.bgrect.y = screen.get_height() / 2 - self.bgrect.h / 2
         self.lines = []
         self.mush = []
+        self.mushOutline = []
+        self.shroomCount = 0
 
     def bgBlit(self, screen: pygame.Surface):
+        screen.set_clip()
         screen.blit(self.bg, self.bgrect)
         pygame.display.flip()
 
@@ -211,27 +214,64 @@ class World:
 
     def blitMush(self, screen: pygame.Surface):
         screen.set_clip()
-        screen.blits((shroom.sprite, shroom.rect) for shroom in self.mush)
+        self.__drawMushs(screen)
         pygame.display.update([shroom.rect for shroom in self.mush])
+
+    def drawAll(self, player: Player, screen: pygame.Surface):
+        screen.set_clip(player.prevRect)
+        screen.blit(self.bg, self.bgrect)
+        self.__drawMushs(screen)
+        screen.set_clip(player.rect)
+        self.__drawMushs(screen)
+        screen.blit(player.sprite, player.rect)
+        pygame.display.update([player.rect, player.prevRect])
 
     def genMush(self, n: int):
         for i in range(n):
             temp = collectable("sprites/svamp.png", self.__randomPos())
             temp.scaleX(70)
             self.mush.append(temp)
+            self.mushOutline.append(False)
 
-    def pickup(self, player: tuple[int, int]):
-        for shroom in self.mush:
-            if shroom.checkPickup(player):
-                print("pickup")
+    def pickup(self, player: tuple[int, int], click: bool, screen: pygame.Surface):
+        for i, shroom in enumerate(self.mush):
+            if shroom.checkPickup(player) and click:
+                self.shroomCount += 1
+                print(self.shroomCount)
+                self.mush.pop(i)
+                self.mushOutline.pop(i)
+                screen.set_clip(shroom.rect)
+                screen.blit(self.bg, self.bgrect)
+                pygame.display.update(shroom.rect)
+
+            elif shroom.checkPickup(player):
+                self.mushOutline[i] = True
+                self.__drawMush(screen, i)
+            else:
+                self.mushOutline[i] = False
+                self.__drawMush(screen, i)
 
     def __randomPos(self):
         x = random.randint(self.bgrect.x, self.bgrect.x + self.bgrect.w)
-        y = random.randint(self.bgrect.y, self.bgrect.y + self.bgrect.h)
+        y = randoPunch.randint(self.bgrect.y, self.bgrect.y + self.bgrect.h)
         return (x, y)
 
     def __lineOffset(self, point: tuple[int, int]):
         return (point[0] * self.bg.get_width() + self.bgrect.x, point[1] * self.bg.get_height() + self.bgrect.y)
+
+    def __drawMush(self, screen: pygame.Surface, n: int):
+        screen.set_clip(self.mush[n])
+        screen.blit(self.bg, self.bgrect)
+        screen.blit(self.mush[n].sprite, self.mush[n].rect)
+        if self.mushOutline[n]:
+            self.mush[n].drawOutline(screen)
+        pygame.display.update(self.mush[n].rect)
+
+    def __drawMushs(self, screen: pygame.Surface):
+        screen.blits((shroom.sprite, shroom.rect) for shroom in self.mush)
+        for i, shroom in enumerate(self.mush):
+            if self.mushOutline[i]:
+                shroom.drawOutline(screen)
 
 class collectable:
     def __init__(self, img: str, pos: tuple[int, int]):
@@ -252,6 +292,48 @@ class collectable:
         self.rect.update(self.rect.topleft, self.sprite.get_size())
 
     def checkPickup(self, player: tuple[int, int]):
+        x = pow(self.rect.centerx - player[0], 2)
+        y = pow(self.rect.centery - player[1], 2)
+        dist = math.sqrt(x + y)
+        if dist < 140:
+            return True
+        else:
+            return False
+
+    def drawOutline(self, screen: pygame.Surface):
+        mask = pygame.mask.from_surface(self.sprite)
+        maskeOutline = mask.outline()
+        for i, point in enumerate(maskeOutline):
+            maskeOutline[i] = (point[0] + self.rect.x, point[1] + self.rect.y)
+        pygame.draw.polygon(screen, (0, 255, 128), maskeOutline, 5)
+
+class Ai:
+    def __init__(self, img: str):
+        self.sprite = pygame.image.load(img)
+        self.rect = self.sprite.get_rect()
+        self.rect.x = 500
+        self.rect.y = 500
+        self.speed = 0.3
+        self.hp = 3
+
+    def scaleX(self, size: float):
+        w = size
+        h = self.sprite.get_height() * (size / self.sprite.get_width())
+        self.sprite = pygame.transform.scale(self.sprite, (w,h))
+        self.rect.update(self.rect.topleft, self.sprite.get_size())
+
+    def scaleY(self, size: float):
+        h = size
+        w = self.sprite.get_width() * (size / self.sprite.get_height())
+        self.sprite = pygame.transform.scale(self.sprite, (w,h))
+        self.rect.update(self.rect.topleft, self.sprite.get_size())
+
+    def move(self, player: tuple[int, int], dt, border: tuple[int, int]):
+        angle = math.atan2(player[1] - self.rect.centery, player[0] - self.rect.centerx)
+        if self.rect.centerx < border[0] and self.rect.centery < border[1]:
+            self.rect = self.rect.move(math.cos(angle) * -self.speed * dt, math.sin(angle) * -self.speed * dt)
+
+    def checkPunch(self, player: tuple[int, int]):
         x = pow(self.rect.centerx - player[0], 2)
         y = pow(self.rect.centery - player[1], 2)
         dist = math.sqrt(x + y)
