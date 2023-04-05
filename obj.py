@@ -193,6 +193,8 @@ class World:
         self.mush = []
         self.mushOutline = []
         self.shroomCount = 0
+        self.men = []
+        self.killCount = 0
 
     def bgBlit(self, screen: pygame.Surface):
         screen.set_clip()
@@ -223,9 +225,14 @@ class World:
         self.__drawMushs(screen)
         screen.set_clip(player.rect)
         self.__drawMushs(screen)
+        self.__drawMen(screen)
         screen.blit(player.sprite, player.rect)
         pygame.display.update([player.rect, player.prevRect])
 
+    def moveMen(self, target: tuple[int, int], dt: float):
+        for man in self.men:
+            man.move(target, dt)
+    
     def genMush(self, n: int):
         for i in range(n):
             temp = collectable("sprites/svamp.png", self.__randomPos())
@@ -251,9 +258,13 @@ class World:
                 self.mushOutline[i] = False
                 self.__drawMush(screen, i)
 
+    def genMen(self, n: int):
+        for i in range(n):
+            self.men.append(Ai("sprites/mand.png", self.__randomPos()))
+
     def __randomPos(self):
         x = random.randint(self.bgrect.x, self.bgrect.x + self.bgrect.w)
-        y = randoPunch.randint(self.bgrect.y, self.bgrect.y + self.bgrect.h)
+        y = random.randint(self.bgrect.y, self.bgrect.y + self.bgrect.h)
         return (x, y)
 
     def __lineOffset(self, point: tuple[int, int]):
@@ -272,6 +283,19 @@ class World:
         for i, shroom in enumerate(self.mush):
             if self.mushOutline[i]:
                 shroom.drawOutline(screen)
+
+    def __drawMen(self, screen: pygame.Surface):
+        for man in self.men:
+            screen.set_clip(man.prevRect)
+            screen.blit(self.bg, self.bgrect)
+            screen.set_clip(man.rect)
+            screen.blit(self.bg, self.bgrect)
+        screen.set_clip()
+        screen.blits([(man.sprite, man.rect) for man in self.men])
+        rects = [man.rect for man in self.men] 
+        rects.extend([man.prevRect for man in self.men])
+        pygame.display.update(rects)
+
 
 class collectable:
     def __init__(self, img: str, pos: tuple[int, int]):
@@ -308,12 +332,11 @@ class collectable:
         pygame.draw.polygon(screen, (0, 255, 128), maskeOutline, 5)
 
 class Ai:
-    def __init__(self, img: str):
+    def __init__(self, img: str, pos: tuple[int, int]):
         self.sprite = pygame.image.load(img)
-        self.rect = self.sprite.get_rect()
-        self.rect.x = 500
-        self.rect.y = 500
-        self.speed = 0.3
+        self.rect = self.sprite.get_rect().move(pos)
+        self.prevRect = self.rect
+        self.speed = 0.2
         self.hp = 3
 
     def scaleX(self, size: float):
@@ -328,10 +351,10 @@ class Ai:
         self.sprite = pygame.transform.scale(self.sprite, (w,h))
         self.rect.update(self.rect.topleft, self.sprite.get_size())
 
-    def move(self, player: tuple[int, int], dt, border: tuple[int, int]):
+    def move(self, player: tuple[int, int], dt):
+        self.prevRect = self.rect
         angle = math.atan2(player[1] - self.rect.centery, player[0] - self.rect.centerx)
-        if self.rect.centerx < border[0] and self.rect.centery < border[1]:
-            self.rect = self.rect.move(math.cos(angle) * -self.speed * dt, math.sin(angle) * -self.speed * dt)
+        self.rect = self.rect.move(math.cos(angle) * -self.speed * dt, math.sin(angle) * -self.speed * dt)
 
     def checkPunch(self, player: tuple[int, int]):
         x = pow(self.rect.centerx - player[0], 2)
