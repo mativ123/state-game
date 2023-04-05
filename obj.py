@@ -8,7 +8,6 @@ class Event:
     def __init__(self):
         self.events = pygame.event.get()
 
-    "public"
     def quit(self):
         if True in [True for x in self.events if x.type == pygame.QUIT]:
             return True
@@ -29,7 +28,6 @@ class Event:
     def update(self):
         self.events = pygame.event.get()
 
-    "private"
     def __getDict(self):
         return [{str(x.type): x.dict["key"]} for x in self.events if x.dict.get("key")]
     
@@ -103,7 +101,6 @@ class linje:
         self.A = A
         self.B = B
 
-    "public"
     def draw(self, screen: pygame.Surface):
         pygame.draw.line(screen, (255, 0, 0), self.A, self.B, width=3)
 
@@ -116,7 +113,6 @@ class linje:
 
         return dif
 
-    "private"
     def __intersect(self, pos1: tuple[int, int], pos2: tuple[tuple[int, int], tuple[int, int]], xy: int):
         t = (pos1[xy] - pos2[0][xy]) / (pos2[1][xy] - pos2[0][xy])
         x = pos2[0][0] + (pos2[1][0] - pos2[0][0]) * t
