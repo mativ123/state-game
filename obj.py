@@ -195,6 +195,7 @@ class World:
         self.shroomCount = 0
         self.men = []
         self.killCount = 0
+        self.blood = []
 
     def bgBlit(self, screen: pygame.Surface):
         screen.set_clip()
@@ -231,15 +232,20 @@ class World:
 
     def moveMen(self, target: tuple[int, int], dt: float, screen: pygame.Surface):
         for man in self.men:
+            if man.dead:
+                continue
             man.move(target, dt, self.lines, screen)
 
     def punchMen(self, player: tuple[int, int], click: bool, screen: pygame.Surface):
         for i, man in enumerate(self.men):
+            if man.dead:
+                continue
             if man.checkPunch(player) and click:
                 man.hp -= 1
             if man.hp == 0:
                 self.__eraseMan(screen, i)
-                self.men.pop(i)
+                man.kill()
+                self.killCount += 1
 
     
     def genMush(self, n: int):
@@ -350,10 +356,12 @@ class collectable:
 class Ai:
     def __init__(self, img: str, pos: tuple[int, int]):
         self.sprite = pygame.image.load(img)
+        self.deadSprite = pygame.image.load("sprites/mand_knust.png")
         self.rect = self.sprite.get_rect().move(pos)
         self.prevRect = self.rect
         self.speed = 0.2
         self.hp = 3
+        self.dead = False
         self.__genPoints()
 
     def scaleX(self, size: float):
@@ -387,6 +395,10 @@ class Ai:
             return True
         else:
             return False
+
+    def kill(self):
+        self.dead = True
+        self.sprite = self.deadSprite
 
     def __genPoints(self):
         self.corners = [self.rect.topleft, self.rect.topright, self.rect.bottomright, self.rect.bottomleft]

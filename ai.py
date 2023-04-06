@@ -34,8 +34,4 @@ while True:
     world.moveMen(player.rect.center, dt, screen)
     world.punchMen(player.rect.center, event.checkInput(pygame.KEYDOWN, pygame.K_e), screen)
 
-    # enemy.move(player.rect.center, dt, screen.get_size())
-
-    # player.blit(screen)
     world.drawAll(player, screen)
-    # screen.blit(enemy.sprite, enemy.rect)
