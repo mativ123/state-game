@@ -229,9 +229,18 @@ class World:
         screen.blit(player.sprite, player.rect)
         pygame.display.update([player.rect, player.prevRect])
 
-    def moveMen(self, target: tuple[int, int], dt: float):
+    def moveMen(self, target: tuple[int, int], dt: float, screen: pygame.Surface):
         for man in self.men:
-            man.move(target, dt)
+            man.move(target, dt, self.lines, screen)
+
+    def punchMen(self, player: tuple[int, int], click: bool, screen: pygame.Surface):
+        for i, man in enumerate(self.men):
+            if man.checkPunch(player) and click:
+                man.hp -= 1
+            if man.hp == 0:
+                self.__eraseMan(screen, i)
+                self.men.pop(i)
+
     
     def genMush(self, n: int):
         for i in range(n):
@@ -296,6 +305,13 @@ class World:
         rects.extend([man.prevRect for man in self.men])
         pygame.display.update(rects)
 
+    def __eraseMan(self, screen: pygame.Surface, n: int):
+        screen.set_clip(self.men[n].prevRect)
+        screen.blit(self.bg, self.bgrect)
+        screen.set_clip(self.men[n].rect)
+        screen.blit(self.bg, self.bgrect)
+        pygame.display.update([self.men[n].rect, self.men[n].prevRect])
+        screen.set_clip()
 
 class collectable:
     def __init__(self, img: str, pos: tuple[int, int]):
@@ -338,6 +354,7 @@ class Ai:
         self.prevRect = self.rect
         self.speed = 0.2
         self.hp = 3
+        self.__genPoints()
 
     def scaleX(self, size: float):
         w = size
@@ -351,10 +368,16 @@ class Ai:
         self.sprite = pygame.transform.scale(self.sprite, (w,h))
         self.rect.update(self.rect.topleft, self.sprite.get_size())
 
-    def move(self, player: tuple[int, int], dt):
+    def move(self, player: tuple[int, int], dt, lines: list, screen: pygame.Surface):
         self.prevRect = self.rect
         angle = math.atan2(player[1] - self.rect.centery, player[0] - self.rect.centerx)
         self.rect = self.rect.move(math.cos(angle) * -self.speed * dt, math.sin(angle) * -self.speed * dt)
+        res = []
+        for col in lines:
+            res.extend([col.colPoint(x, screen, self.rect.center) for x in self.corners])
+        for dif in res:
+            self.rect = self.rect.move(dif)
+        self.__genPoints()
 
     def checkPunch(self, player: tuple[int, int]):
         x = pow(self.rect.centerx - player[0], 2)
@@ -364,3 +387,6 @@ class Ai:
             return True
         else:
             return False
+
+    def __genPoints(self):
+        self.corners = [self.rect.topleft, self.rect.topright, self.rect.bottomright, self.rect.bottomleft]

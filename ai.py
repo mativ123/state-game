@@ -7,9 +7,10 @@ pygame.init()
 screen = pygame.display.set_mode((1000, 1000))
 
 event = Event()
-world = World("sprites/map 1.png", screen)
+world = World("sprites/map 2.png", screen)
 world.genMen(3)
 world.bgBlit(screen)
+world.genLines("map2")
 
 player = Player("sprites/and.png", 0.65, screen)
 
@@ -29,7 +30,9 @@ while True:
         player.event(i, event.checkInput(pygame.KEYUP, inp[0]), pygame.KEYUP)
 
     player.move(dt)
-    world.moveMen(player.rect.center, dt)
+    player.collision(world.lines, screen)
+    world.moveMen(player.rect.center, dt, screen)
+    world.punchMen(player.rect.center, event.checkInput(pygame.KEYDOWN, pygame.K_e), screen)
 
     # enemy.move(player.rect.center, dt, screen.get_size())
 
