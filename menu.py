@@ -29,8 +29,8 @@ width = screen.get_width()
 height = screen.get_height() 
   
 # defining a font 
-smallfont = pygame.font.SysFont('Castellar',25) 
-smallfont1 = pygame.font.SysFont('Castellar',55)   
+smallfont = pygame.font.Font("CASTELAR.ttf", 25)
+smallfont1 = pygame.font.Font("CASTELAR.ttf", 55)   
 # rendering a text written in 
 # this font 
 text = smallfont.render('Quit' , True , color) 
@@ -62,12 +62,14 @@ while running:
                 pygame.quit() 
             
             if width/2-90 <= mouse[0] <= width/2+140-50 and height/2-60 <= mouse[1] <= height/2-20:
-                print("lore")
+                pygame.quit()
+                running = False
+                subprocess.run(["python", "lore.py"])
 
             if width/2-90 <= mouse[0] <= width/2+140-50 and height/2-180 <= mouse[1] <= height/2-80:
                 pygame.quit()
                 running = False
-                subprocess.run(["python", "ai.py"])
+                subprocess.run(["python", "main.py"])
 
     if not running:
         break
