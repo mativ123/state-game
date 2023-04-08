@@ -1,6 +1,6 @@
 import pygame 
 import sys 
-  
+import subprocess
   
 # initializing the constructor 
 pygame.init() 
@@ -39,7 +39,7 @@ text2 = smallfont.render('Chronicles' , True , color)
 textover = smallfont1.render('Funky Fowl Frenzy', True , color_red)
 
 #Loads picture
-andImg = pygame.image.load('./Menu til fff/and med pistol.png')
+andImg = pygame.image.load('and med pistol.png')
 
 def andpic(x,y):
     screen.blit(andImg, (x,y))
@@ -47,14 +47,12 @@ def andpic(x,y):
 x =  (width/14)
 y = (height/7)
 
+running = True
 
-while True: 
-      
+while running: 
     for ev in pygame.event.get(): 
-          
         if ev.type == pygame.QUIT: 
             pygame.quit() 
-              
         #checks if a mouse is clicked 
         if ev.type == pygame.MOUSEBUTTONDOWN: 
               
@@ -67,7 +65,12 @@ while True:
                 print("lore")
 
             if width/2-90 <= mouse[0] <= width/2+140-50 and height/2-180 <= mouse[1] <= height/2-80:
-                print("start")
+                pygame.quit()
+                running = False
+                subprocess.run(["python", "ai.py"])
+
+    if not running:
+        break
 
     # fills the screen with a color 
     screen.fill((0,0,0)) 

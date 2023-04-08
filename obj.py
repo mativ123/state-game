@@ -196,9 +196,11 @@ class World:
         self.men = []
         self.killCount = 0
         self.blood = []
+        self.taber = Voiceline("VoiceLines/talent.mp3")
 
     def bgBlit(self, screen: pygame.Surface):
         screen.set_clip()
+        screen.fill((0, 0, 0))
         screen.blit(self.bg, self.bgrect)
         pygame.display.flip()
 
@@ -220,13 +222,16 @@ class World:
         self.__drawMushs(screen)
         pygame.display.update([shroom.rect for shroom in self.mush])
 
-    def drawAll(self, player: Player, screen: pygame.Surface):
+    def drawAll(self, player: Player, screen: pygame.Surface, shroom: bool):
         screen.set_clip(player.prevRect)
         screen.blit(self.bg, self.bgrect)
-        self.__drawMushs(screen)
+        if shroom:
+            self.__drawMushs(screen)
         screen.set_clip(player.rect)
-        self.__drawMushs(screen)
-        self.__drawMen(screen)
+        if shroom:
+            self.__drawMushs(screen)
+        else:
+            self.__drawMen(screen)
         screen.blit(player.sprite, player.rect)
         pygame.display.update([player.rect, player.prevRect])
 
@@ -242,6 +247,7 @@ class World:
                 continue
             if man.checkPunch(player) and click:
                 man.hp -= 1
+                self.taber.play()
             if man.hp == 0:
                 self.__eraseMan(screen, i)
                 man.kill()
@@ -259,7 +265,6 @@ class World:
         for i, shroom in enumerate(self.mush):
             if shroom.checkPickup(player) and click:
                 self.shroomCount += 1
-                print(self.shroomCount)
                 self.mush.pop(i)
                 self.mushOutline.pop(i)
                 screen.set_clip(shroom.rect)
@@ -272,6 +277,14 @@ class World:
             else:
                 self.mushOutline[i] = False
                 self.__drawMush(screen, i)
+
+    def killShrooms(self, screen: pygame.Surface):
+        for i, shroom in enumerate(self.mush):
+            self.mush.pop(i)
+            self.mushOutline.pop(i)
+            screen.set_clip(shroom.rect)
+            screen.blit(self.bg, self.bgrect)
+            pygame.display.update(shroom.rect)
 
     def genMen(self, n: int):
         for i in range(n):
@@ -416,3 +429,16 @@ class Ai:
 
     def __genPoints(self):
         self.corners = [self.rect.topleft, self.rect.topright, self.rect.bottomright, self.rect.bottomleft]
+
+class Voiceline:
+    def __init__(self, path):
+        # Her initialisere jeg pygame mixer
+        if not pygame.mixer.get_init():
+            pygame.mixer.init()
+
+        # Her loader lydden
+        self.sound = pygame.mixer.Sound(path)
+
+    def play(self):
+        # Her spiller lyden så
+        self.sound.play()
