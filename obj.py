@@ -277,6 +277,20 @@ class World:
         for i in range(n):
             self.men.append(Ai("sprites/mand.png", self.__randomPos()))
 
+    def drawScore(self, shrooms: bool, screen: pygame.Surface):
+        color = (255, 0, 0)
+        text = str(self.shroomCount if shrooms else self.killCount)
+        if not pygame.font.get_init():
+            pygame.font.init()
+        scoreF = pygame.font.Font("Consolas-Regular.ttf", 40)
+        rectF = pygame.Rect((0, 0), scoreF.size(text))
+        rectF.x = screen.get_width() - rectF.w
+        screen.set_clip(rectF)
+        screen.blit(self.bg, self.bgrect)
+        screen.set_clip()
+        screen.blit(scoreF.render(text, True, color), rectF)
+        pygame.display.update(rectF)
+
     def __randomPos(self):
         x = random.randint(self.bgrect.x, self.bgrect.x + self.bgrect.w)
         y = random.randint(self.bgrect.y, self.bgrect.y + self.bgrect.h)
