@@ -39,7 +39,7 @@ text2 = smallfont.render('Chronicles' , True , color)
 textover = smallfont1.render('Funky Fowl Frenzy', True , color_red)
 
 #Loads picture
-andImg = pygame.image.load('and med pistol.png')
+andImg = pygame.image.load('voldsand.png')
 
 def andpic(x,y):
     screen.blit(andImg, (x,y))
