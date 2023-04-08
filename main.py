@@ -33,7 +33,6 @@ class duckState(StateMachine):
 
     @doneBeatup.after
     def exit(self):
-        print("din far")
         sys.exit()
 
 stateMac = duckState()
@@ -64,3 +63,6 @@ while True:
 
     world.drawAll(duck, screen, stateMac.current_state.id == "pickup")
     world.drawScore(stateMac.current_state.id == "pickup", screen)
+
+
+
